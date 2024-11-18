@@ -16,6 +16,10 @@ impl PuzzleSolver for TestPuzzleSolver {
         }
     }
 
+    fn get_description(&self) -> &str {
+        "--- Test Puzzle ---"
+    }
+
     fn parse_input_file(&mut self, lines: Vec<String>) -> PuzzleResult {
         let mut content = Vec::new();
 

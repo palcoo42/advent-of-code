@@ -19,9 +19,6 @@ const PART_2_PREFIX: &str = "=> Part 2:";
 
 #[derive(Default)]
 pub struct Puzzle<T> {
-    /// Descriptive name of the puzzle
-    description: String,
-
     /// Text file reader
     reader: Option<TextReader>,
 
@@ -39,9 +36,8 @@ where
     /// # Returns
     ///
     /// Instance of Puzzle specialized for concrete PuzzleSolver
-    pub fn new(description: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            description: description.to_string(),
             reader: None,
             solver: T::new(),
         }
@@ -57,9 +53,8 @@ where
     /// # Returns
     ///
     /// Instance of Puzzle specialized for concrete PuzzleSolver
-    pub fn new_with_reader(description: &str, path: &Path) -> Self {
+    pub fn new_with_reader(path: &Path) -> Self {
         Self {
-            description: description.to_string(),
             reader: Some(TextReader::new(path)),
             solver: T::new(),
         }
@@ -75,7 +70,7 @@ where
     ///
     /// Successful result or specific error occurred during the solving of the puzzle
     pub fn solve(&mut self) -> PuzzleResult {
-        println!("{}", self.description);
+        println!("{}", self.solver.get_description());
         println!();
 
         // Read input file if present

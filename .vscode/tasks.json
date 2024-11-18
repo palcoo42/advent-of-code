@@ -3,6 +3,23 @@
 	"tasks": [
 		{
 			"type": "cargo",
+			"command": "run",
+			"args": [
+				"--example",
+				"puzzle-example"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "test",
+			"label": "$(play) puzzle-example",
+			"options": {"statusbar": {"color": "#7dcb8a"}},
+			"presentation": {
+				"clear": true
+			}
+		},
+		{
+			"type": "cargo",
 			"command": "test",
 			"args": [
 				"--",

@@ -9,6 +9,13 @@ pub trait PuzzleSolver {
     /// New instance of puzzle solver
     fn new() -> Self;
 
+    /// Get puzzle description
+    ///
+    /// # Returns
+    ///
+    /// String representation of puzzle description
+    fn get_description(&self) -> &str;
+
     /// Parse content of the input file
     /// This method is called only if [Puzzle] is created with reader
     ///
