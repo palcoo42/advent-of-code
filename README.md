@@ -1,0 +1,1 @@
+This project consists of Rust utilities which makes your life easier when solving 'Advent of Code' challenges.

@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "test",
+			"args": [
+				"--",
+				"--include-ignored"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "test",
+			"label": "$(play) cargo test all",
+			"options": {"statusbar": {"color": "#cb7d92"}},
+			"presentation": {
+				"clear": true
+			}
+		}
+	]
+}
