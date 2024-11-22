@@ -1,5 +1,5 @@
 [package]
-name = "<TEMPLATE_PACKAGE_NAME>"
+name = "TEMPLATE_PACKAGE_NAME"
 version = "0.1.0"
 edition = "2021"
 

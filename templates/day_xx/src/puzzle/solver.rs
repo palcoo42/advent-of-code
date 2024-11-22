@@ -11,7 +11,7 @@ impl PuzzleSolver for Solver {
     }
 
     fn get_description(&self) -> &str {
-        "--- Day 02: Bathroom Security ---"
+        "TEMPLATE_SOLVER_DESCRIPTION"
     }
 
     fn parse_input_file(&mut self, lines: Vec<String>) -> PuzzleResult {

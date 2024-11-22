@@ -100,11 +100,11 @@ function create_day_puzzle()
     # Replace default files content with puzzle specific names
     echo "- Updating template files for your puzzle ..."
 
-    if ! sed -i "s/<TEMPLATE_PACKAGE_NAME>/${puzzle_dir_name}/g" "${puzzle_dir_name_path}/Cargo.toml"; then
+    if ! sed -i "s/TEMPLATE_PACKAGE_NAME/${puzzle_dir_name}/g" "${puzzle_dir_name_path}/Cargo.toml"; then
         die "Failed to replace TEMPLATE_PACKAGE_NAME in Cargo.toml"
     fi
 
-    if ! sed -i "s/<TEMPLATE_SOLVER_DESCRIPTION>/${PUZZLE_NAME}/g" "${puzzle_dir_name_path}/src/puzzle/solver.rs"; then
+    if ! sed -i "s/TEMPLATE_SOLVER_DESCRIPTION/${PUZZLE_NAME}/g" "${puzzle_dir_name_path}/src/puzzle/solver.rs"; then
         die "Failed to replace TEMPLATE_SOLVER_DESCRIPTION in src/puzzle/solver.rs"
     fi
 
