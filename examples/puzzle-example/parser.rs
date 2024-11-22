@@ -3,15 +3,8 @@ use advent_of_code::puzzles::puzzle_error::PuzzleError;
 pub struct Parser {}
 
 impl Parser {
-    pub fn parse_lines(lines: Vec<String>) -> Result<Vec<u32>, PuzzleError> {
-        let mut numbers = Vec::new();
-
-        for line in lines {
-            let number = Self::parse_line(&line)?;
-            numbers.push(number);
-        }
-
-        Ok(numbers)
+    pub fn parse_lines(lines: &[String]) -> Result<Vec<u32>, PuzzleError> {
+        lines.iter().map(|line| Self::parse_line(line)).collect()
     }
 
     fn parse_line(line: &str) -> Result<u32, PuzzleError> {

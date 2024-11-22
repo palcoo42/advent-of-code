@@ -22,7 +22,7 @@ impl PuzzleSolver for Solver {
         "--- Puzzle ---"
     }
 
-    fn parse_input_file(&mut self, lines: Vec<String>) -> PuzzleResult {
+    fn parse_input_file(&mut self, lines: &[String]) -> PuzzleResult {
         self.numbers = Parser::parse_lines(lines)?;
         Ok(())
     }

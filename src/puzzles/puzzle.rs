@@ -101,7 +101,7 @@ where
                 let lines = reader.read_lines()?;
 
                 // Parse input file and report possible error
-                self.solver.parse_input_file(lines)?;
+                self.solver.parse_input_file(&lines[..])?;
             }
             None => println!("{} Nothing to do", READ_INPUT_FILE_PREFIX),
         }

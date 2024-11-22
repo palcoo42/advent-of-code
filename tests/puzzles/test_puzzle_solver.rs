@@ -20,7 +20,7 @@ impl PuzzleSolver for TestPuzzleSolver {
         "--- Test Puzzle ---"
     }
 
-    fn parse_input_file(&mut self, lines: Vec<String>) -> PuzzleResult {
+    fn parse_input_file(&mut self, lines: &[String]) -> PuzzleResult {
         let mut content = Vec::new();
 
         for line in lines {
@@ -32,8 +32,6 @@ impl PuzzleSolver for TestPuzzleSolver {
 
             content.push(number);
         }
-
-        self.content = content;
 
         Ok(())
     }
