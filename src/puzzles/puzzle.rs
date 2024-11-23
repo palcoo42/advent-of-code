@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, time::Instant};
 
 use crate::puzzles::solution_progress_bar_thread::SolutionProgressBarThread;
 
@@ -13,6 +13,7 @@ pub type PuzzleResult = Result<(), PuzzleError>;
 pub type SolutionResult = Result<String, PuzzleError>;
 
 /// Prefixes for console output
+const TIME_PREFIX: &str = "----:---"; // seconds:miliseconds
 const READ_INPUT_FILE_PREFIX: &str = "=> Reader:";
 const PART_1_PREFIX: &str = "=> Part 1:";
 const PART_2_PREFIX: &str = "=> Part 2:";
@@ -73,54 +74,85 @@ where
         println!("{}", self.solver.get_description());
         println!();
 
+        let timer = Instant::now();
+
         // Read input file if present
-        self.read_input_file()?;
+        self.read_input_file(&timer)?;
 
         // Solve puzzle part 1
-        let result_part_1 = self.solve_part_1()?;
-        println!("{} {}", PART_1_PREFIX, result_part_1);
+        self.solve_part_1(&timer)?;
 
         // Solve puzzle part 2
-        let result_part_2 = self.solve_part_2()?;
-        println!("{} {}", PART_2_PREFIX, result_part_2);
+        self.solve_part_2(&timer)?;
 
         // If we get here everything is fine
         Ok(())
     }
 
-    fn read_input_file(&mut self) -> PuzzleResult {
-        match &self.reader {
-            Some(reader) => {
-                println!(
-                    "{} Reading input file '{}'",
-                    READ_INPUT_FILE_PREFIX,
-                    reader.get_file_path_as_string()
-                );
+    fn print_result(timer: &Instant, prefix: &str, result: &str) {
+        println!(
+            "{:04}:{:03} {} {}",
+            timer.elapsed().as_secs(),
+            timer.elapsed().subsec_millis(),
+            prefix,
+            result
+        );
+    }
 
-                // Read lines from input file
-                let lines = reader.read_lines()?;
-                let lines = lines.iter().map(|line| line.as_str()).collect::<Vec<_>>();
+    fn read_input_file(&mut self, timer: &Instant) -> PuzzleResult {
+        let result;
 
-                // Parse input file and report possible error
-                self.solver.parse_input_file(&lines)?;
-            }
-            None => println!("{} Nothing to do", READ_INPUT_FILE_PREFIX),
+        {
+            let prefix = format!("{} {}", TIME_PREFIX, READ_INPUT_FILE_PREFIX);
+            let mut progress = SolutionProgressBarThread::new(&prefix);
+            progress.run();
+
+            result = match &self.reader {
+                Some(reader) => {
+                    // Read lines from input file
+                    let lines = reader.read_lines()?;
+                    let lines = lines.iter().map(|line| line.as_str()).collect::<Vec<_>>();
+
+                    // Parse input file and report possible error
+                    self.solver.parse_input_file(&lines)?;
+
+                    format!("Done [{}]", reader.get_file_path().to_string_lossy())
+                }
+                None => String::from("No input file"),
+            };
         }
 
+        Self::print_result(timer, READ_INPUT_FILE_PREFIX, &result);
         Ok(())
     }
 
-    fn solve_part_1(&self) -> SolutionResult {
-        let mut progress = SolutionProgressBarThread::new(PART_1_PREFIX);
-        progress.run();
+    fn solve_part_1(&self, timer: &Instant) -> PuzzleResult {
+        let result;
 
-        self.solver.part_1()
+        {
+            let prefix = format!("{} {}", TIME_PREFIX, PART_1_PREFIX);
+            let mut progress = SolutionProgressBarThread::new(&prefix);
+            progress.run();
+
+            result = self.solver.part_1()?;
+        }
+
+        Self::print_result(timer, PART_1_PREFIX, &result);
+        Ok(())
     }
 
-    fn solve_part_2(&self) -> SolutionResult {
-        let mut progress = SolutionProgressBarThread::new(PART_2_PREFIX);
-        progress.run();
+    fn solve_part_2(&self, timer: &Instant) -> PuzzleResult {
+        let result;
 
-        self.solver.part_2()
+        {
+            let prefix = format!("{} {}", TIME_PREFIX, PART_2_PREFIX);
+            let mut progress = SolutionProgressBarThread::new(&prefix);
+            progress.run();
+
+            result = self.solver.part_2()?;
+        }
+
+        Self::print_result(timer, PART_2_PREFIX, &result);
+        Ok(())
     }
 }
