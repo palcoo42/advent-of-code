@@ -14,7 +14,7 @@ impl PuzzleSolver for Solver {
         "TEMPLATE_SOLVER_DESCRIPTION"
     }
 
-    fn parse_input_file(&mut self, lines: Vec<String>) -> PuzzleResult {
+    fn parse_input_file(&mut self, lines: &[&str]) -> PuzzleResult {
         Ok(())
     }
 

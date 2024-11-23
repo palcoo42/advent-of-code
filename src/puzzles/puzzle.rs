@@ -99,9 +99,10 @@ where
 
                 // Read lines from input file
                 let lines = reader.read_lines()?;
+                let lines = lines.iter().map(|line| line.as_str()).collect::<Vec<_>>();
 
                 // Parse input file and report possible error
-                self.solver.parse_input_file(&lines[..])?;
+                self.solver.parse_input_file(&lines)?;
             }
             None => println!("{} Nothing to do", READ_INPUT_FILE_PREFIX),
         }

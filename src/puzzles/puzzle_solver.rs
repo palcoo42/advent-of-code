@@ -26,7 +26,7 @@ pub trait PuzzleSolver {
     /// # Returns
     ///
     /// Empty result on success, error on failure
-    fn parse_input_file(&mut self, lines: &[String]) -> PuzzleResult;
+    fn parse_input_file(&mut self, lines: &[&str]) -> PuzzleResult;
 
     /// Solve part 1 of the puzzle
     ///

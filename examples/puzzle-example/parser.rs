@@ -3,7 +3,7 @@ use advent_of_code::puzzles::puzzle_error::PuzzleError;
 pub struct Parser {}
 
 impl Parser {
-    pub fn parse_lines(lines: &[String]) -> Result<Vec<u32>, PuzzleError> {
+    pub fn parse_lines(lines: &[&str]) -> Result<Vec<u32>, PuzzleError> {
         lines.iter().map(|line| Self::parse_line(line)).collect()
     }
 
