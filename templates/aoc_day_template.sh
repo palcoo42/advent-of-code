@@ -117,12 +117,13 @@ function format_puzzle_dir()
 {
     # Take puzzle name from command line and do following changes to format name of the puzzle directory:
     #
-    # 1) Remove non-ASCII characters -:'?       tr -d
-    # 2) Remove leading and trailing spaces     xargs echo -n
-    # 3) Convert all characters to lowercase    tr '[:upper:]' '[:lower:]'
-    # 4) Replace spaces with underscores        tr '[:space:]' '_'
+    # 1) Append 0 before 1-9 in Day                             sed 's/\b\([1-9]\)\b/0\1/g'
+    # 2) Remove non-ASCII characters -:'?                       tr -d
+    # 3) Remove leading and trailing spaces                     xargs echo -n
+    # 4) Convert all characters to lowercase                    tr '[:upper:]' '[:lower:]'
+    # 5) Replace spaces with underscores                        tr '[:space:]' '_'
 
-    echo "$PUZZLE_NAME" | tr -d - | tr -d : | tr -d \' | tr -d ? | xargs echo -n  |  tr '[:upper:]' '[:lower:]' | tr '[:space:]' '_'
+    echo "$PUZZLE_NAME" | sed 's/Day \([1-9]\)\b/Day 0\1/g' | tr -d - | tr -d : | tr -d \' | tr -d ? | xargs echo -n  |  tr '[:upper:]' '[:lower:]' | tr '[:space:]' '_'
 }
 
 # main
