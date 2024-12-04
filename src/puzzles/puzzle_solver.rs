@@ -33,12 +33,25 @@ pub trait PuzzleSolver {
     /// # Returns
     ///
     /// String representation of the solution on success, error on failure
-    fn part_1(&self) -> SolutionResult;
+    fn part_1(&self) -> SolutionResult {
+        Ok(String::from("Not solved"))
+    }
 
     /// Solve part 2 of the puzzle
     ///
     /// # Returns
     ///
     /// String representation of the solution on success, error on failure
-    fn part_2(&self) -> SolutionResult;
+    fn part_2(&self) -> SolutionResult {
+        Ok(String::from("Not solved"))
+    }
+
+    /// Solve part 3 of the puzzle
+    ///
+    /// # Returns
+    ///
+    /// String representation of the solution on success, error on failure
+    fn part_3(&self) -> SolutionResult {
+        Ok(String::from("Not solved"))
+    }
 }

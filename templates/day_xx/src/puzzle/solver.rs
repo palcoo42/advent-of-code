@@ -19,10 +19,14 @@ impl PuzzleSolver for Solver {
     }
 
     fn part_1(&self) -> SolutionResult {
-        Ok(String::from("not solved"))
+        Ok(String::from("Not solved"))
     }
 
     fn part_2(&self) -> SolutionResult {
-        Ok(String::from("not solved"))
+        Ok(String::from("Not solved"))
+    }
+
+    fn part_3(&self) -> SolutionResult {
+        Ok(String::from("Not solved"))
     }
 }
