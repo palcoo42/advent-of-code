@@ -20,6 +20,23 @@
 		},
 		{
 			"type": "cargo",
+			"command": "run",
+			"args": [
+				"--bin",
+				"TEMPLATE_PACKAGE_NAME"
+			],
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "test",
+			"label": "$(play) day-xx",
+			"options": {"statusbar": {"color": "#6b76db"}},
+			"presentation": {
+				"clear": true
+			}
+		},
+		{
+			"type": "cargo",
 			"command": "test",
 			"args": [
 				"--",

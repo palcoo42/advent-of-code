@@ -1,8 +1,12 @@
 [package]
 name = "advent-of-code"
-version = "2.0.0"
+version = "2.1.0"
 edition = "2021"
 
 [dependencies]
 temp-env = { version = "0.3.*" }
 indicatif = { version = "0.17.*" }
+
+[[bin]]
+name = "TEMPLATE_PACKAGE_NAME"
+path = "templates/day_xx/src/main.rs"

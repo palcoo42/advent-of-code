@@ -1,0 +1,1 @@
+../templates/day_xx/resources/input.txt
