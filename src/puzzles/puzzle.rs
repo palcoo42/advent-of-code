@@ -17,7 +17,6 @@ const TIME_PREFIX: &str = "----:---"; // seconds:miliseconds
 const READ_INPUT_FILE_PREFIX: &str = "=> Reader:";
 const PART_1_PREFIX: &str = "=> Part 1:";
 const PART_2_PREFIX: &str = "=> Part 2:";
-const PART_3_PREFIX: &str = "=> Part 3:";
 
 #[derive(Default)]
 pub struct Puzzle<T> {
@@ -85,9 +84,6 @@ where
 
         // Solve puzzle part 2
         self.solve_part_2(&timer)?;
-
-        // Solve puzzle part 3
-        self.solve_part_3(&timer)?;
 
         // If we get here everything is fine
         Ok(())
@@ -157,21 +153,6 @@ where
         }
 
         Self::print_result(timer, PART_2_PREFIX, &result);
-        Ok(())
-    }
-
-    fn solve_part_3(&self, timer: &Instant) -> PuzzleResult {
-        let result;
-
-        {
-            let prefix = format!("{} {}", TIME_PREFIX, PART_3_PREFIX);
-            let mut progress = SolutionProgressBarThread::new(&prefix);
-            progress.run();
-
-            result = self.solver.part_3()?;
-        }
-
-        Self::print_result(timer, PART_3_PREFIX, &result);
         Ok(())
     }
 }

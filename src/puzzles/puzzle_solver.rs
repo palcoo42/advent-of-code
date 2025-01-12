@@ -45,13 +45,4 @@ pub trait PuzzleSolver {
     fn part_2(&self) -> SolutionResult {
         Ok(String::from("Not solved"))
     }
-
-    /// Solve part 3 of the puzzle
-    ///
-    /// # Returns
-    ///
-    /// String representation of the solution on success, error on failure
-    fn part_3(&self) -> SolutionResult {
-        Ok(String::from("Not solved"))
-    }
 }
