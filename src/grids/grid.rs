@@ -1,0 +1,255 @@
+use std::ops::{Index, IndexMut};
+
+use crate::puzzles::puzzle_error::PuzzleError;
+
+use super::{direction::Direction, point::Point};
+
+#[derive(Default, PartialEq, Eq)]
+pub struct Grid {
+    rows: usize,
+    cols: usize,
+    internal: Vec<Vec<char>>,
+}
+
+impl Grid {
+    /// Create new grid, rows and columns count is deduced from input data
+    pub fn new(data: Vec<Vec<char>>) -> Result<Self, PuzzleError> {
+        // Check input data
+        if data.is_empty() {
+            return Err(PuzzleError::GenericError("Grid is empty".to_string()));
+        }
+
+        if data[0].is_empty() {
+            return Err(PuzzleError::GenericError("Grid[0] is empty".to_string()));
+        }
+
+        let rows = data.len();
+        let cols = data[0].len();
+        let mut tiles = Vec::new();
+
+        for i in 0..rows {
+            let row = data[i].iter().map(|c| *c).collect();
+            tiles.push(row);
+        }
+
+        Ok(Self {
+            rows,
+            cols,
+            internal: tiles,
+        })
+    }
+
+    pub fn new_from_lines(lines: &[&str]) -> Result<Self, PuzzleError> {
+        // Parse lines to Vec<Vec<char>>
+        let grid = lines
+            .iter()
+            .map(|line| line.chars().collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+
+        Self::new(grid)
+    }
+
+    pub fn is_point_in_grid(&self, point: &Point) -> bool {
+        point.x >= 0 && point.x < self.cols as isize && point.y >= 0 && point.y < self.rows as isize
+    }
+
+    pub fn neighbor(&self, point: &Point, direction: Direction) -> Option<Point> {
+        self.neighbor_if(point, direction, || true)
+    }
+
+    pub fn neighbor_if<F>(&self, point: &Point, direction: Direction, func: F) -> Option<Point>
+    where
+        F: FnOnce() -> bool,
+    {
+        // Calculate coordinates of the neighbor
+        let neighbor = point.neighbor(direction);
+
+        // If neighbor is within grid return it
+        match self.is_point_in_grid(&neighbor) && func() {
+            true => Some(neighbor),
+            false => None,
+        }
+    }
+
+    /// Get positions of all values from the grid
+    pub fn get_all_values(&self, value: char) -> Vec<Point> {
+        self.internal
+            .iter()
+            .enumerate()
+            .flat_map(|(i, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter_map(move |(j, c)| match *c == value {
+                        true => Some(Point {
+                            x: j as isize,
+                            y: i as isize,
+                        }),
+                        false => None,
+                    })
+            })
+            .collect()
+    }
+
+    /// Print grid to the console.
+    pub fn print(&self) {
+        self.print_with_visited(&[]);
+    }
+
+    /// Print grid to the console. If point is in visited collection show 'O' for this point.
+    pub fn print_with_visited(&self, visited: &[Point]) {
+        // Go through all rows
+        for i in 0..self.rows {
+            // Format whole line and print it only once to the console to speedup writesS
+            let line = self.internal[i]
+                .iter()
+                .enumerate()
+                .map(|(j, c)| {
+                    match visited.contains(&Point {
+                        x: j as isize,
+                        y: i as isize,
+                    }) {
+                        true => 'O',
+                        false => *c,
+                    }
+                })
+                .collect::<String>();
+
+            println!("{}", line);
+        }
+    }
+}
+
+impl Index<Point> for Grid {
+    type Output = char;
+
+    fn index(&self, index: Point) -> &Self::Output {
+        &self.internal[index.y as usize][index.x as usize]
+    }
+}
+
+impl IndexMut<Point> for Grid {
+    fn index_mut(&mut self, index: Point) -> &mut Self::Output {
+        &mut self.internal[index.y as usize][index.x as usize]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn build_grid() -> Grid {
+        Grid::new(vec![vec!['a', 'b', 'c'], vec!['d', 'e', 'f']]).unwrap()
+    }
+
+    #[test]
+    fn test_new_from_lines() {
+        let lines = ["..#.S#", "......", "E#...#"];
+
+        let result = Grid::new_from_lines(&lines);
+        assert!(result.is_ok());
+
+        let grid = result.unwrap();
+        assert_eq!(grid.rows, 3);
+        assert_eq!(grid.cols, 6);
+        assert_eq!(grid[Point { x: 0, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 4, y: 0 }], 'S');
+        assert_eq!(grid[Point { x: 5, y: 0 }], '#');
+        assert_eq!(grid[Point { x: 1, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 0, y: 2 }], 'E');
+        assert_eq!(grid[Point { x: 1, y: 2 }], '#');
+        assert_eq!(grid[Point { x: 5, y: 2 }], '#');
+    }
+
+    #[test]
+    fn test_index() {
+        let mut grid = build_grid();
+
+        assert_eq!(grid.rows, 2);
+        assert_eq!(grid.cols, 3);
+        assert_eq!(grid[Point::new(0, 0)], 'a');
+        assert_eq!(grid[Point::new(2, 1)], 'f');
+
+        grid[Point::new(0, 0)] = 'x';
+        assert_eq!(grid[Point::new(0, 0)], 'x');
+    }
+
+    #[test]
+    fn test_is_point_in_grid() {
+        let grid = build_grid();
+
+        assert!(grid.is_point_in_grid(&Point { x: 0, y: 0 }));
+        assert!(grid.is_point_in_grid(&Point { x: 2, y: 0 }));
+        assert!(grid.is_point_in_grid(&Point { x: 0, y: 1 }));
+        assert!(grid.is_point_in_grid(&Point { x: 2, y: 1 }));
+    }
+
+    #[test]
+    fn test_is_point_not_in_grid() {
+        let grid = build_grid();
+
+        assert!(!grid.is_point_in_grid(&Point { x: -1, y: 0 }));
+        assert!(!grid.is_point_in_grid(&Point { x: 0, y: -1 }));
+        assert!(!grid.is_point_in_grid(&Point { x: 3, y: 1 }));
+        assert!(!grid.is_point_in_grid(&Point { x: 2, y: 2 }));
+    }
+
+    #[test]
+    fn test_neighbor_if_true() {
+        let grid = build_grid();
+
+        let result = grid.neighbor_if(&Point::new(0, 0), Direction::East, || true);
+        assert!(result.is_some(), "result: {:?}", result);
+        assert_eq!(result.unwrap(), Point::new(1, 0));
+
+        let result = grid.neighbor_if(&Point::new(0, 0), Direction::West, || true);
+        assert!(result.is_none(), "result: {:?}", result);
+    }
+
+    #[test]
+    fn test_neighbor_if_false() {
+        let grid = build_grid();
+
+        let result = grid.neighbor_if(&Point::new(0, 0), Direction::East, || false);
+        assert!(result.is_none(), "result: {:?}", result);
+
+        let result = grid.neighbor_if(&Point::new(0, 0), Direction::West, || false);
+        assert!(result.is_none(), "result: {:?}", result);
+    }
+
+    #[test]
+    fn test_neighbor() {
+        let grid = build_grid();
+
+        let result = grid.neighbor(&Point::new(0, 0), Direction::East);
+        assert!(result.is_some(), "result: {:?}", result);
+        assert_eq!(result.unwrap(), Point::new(1, 0));
+
+        let result = grid.neighbor(&Point::new(0, 0), Direction::South);
+        assert!(result.is_some(), "result: {:?}", result);
+        assert_eq!(result.unwrap(), Point::new(0, 1));
+
+        let result = grid.neighbor(&Point::new(0, 0), Direction::North);
+        assert!(result.is_none(), "result: {:?}", result);
+
+        let result = grid.neighbor(&Point::new(0, 0), Direction::West);
+        assert!(result.is_none(), "result: {:?}", result);
+    }
+
+    #[test]
+    fn test_get_all_values() {
+        let lines = ["..#.S#", "......", "E#...#"];
+        let grid = Grid::new_from_lines(&lines).unwrap();
+
+        assert_eq!(grid.get_all_values('S'), vec![Point { x: 4, y: 0 }]);
+        assert_eq!(grid.get_all_values('E'), vec![Point { x: 0, y: 2 }]);
+        assert_eq!(
+            grid.get_all_values('#'),
+            vec![
+                Point { x: 2, y: 0 },
+                Point { x: 5, y: 0 },
+                Point { x: 1, y: 2 },
+                Point { x: 5, y: 2 }
+            ]
+        );
+    }
+}
