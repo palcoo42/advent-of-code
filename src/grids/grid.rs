@@ -4,7 +4,7 @@ use crate::puzzles::puzzle_error::PuzzleError;
 
 use super::{direction::Direction, point::Point};
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub struct Grid {
     rows: usize,
     cols: usize,
