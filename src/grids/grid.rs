@@ -69,6 +69,14 @@ impl Grid {
         })
     }
 
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
+
     pub fn fill(&mut self, data: &[(Point, char)]) -> Result<(), PuzzleError> {
         // Avoid changing of the grid if there is invalid point
         for (point, _) in data {
@@ -91,33 +99,57 @@ impl Grid {
         point.x >= 0 && point.x < self.cols as isize && point.y >= 0 && point.y < self.rows as isize
     }
 
-    pub fn neighbor(&self, point: &Point, direction: Direction) -> Option<Point> {
-        self.neighbor_if(point, direction, || true)
+    pub fn neighbor(&self, point: &Point, direction: &Direction) -> Option<Point> {
+        self.neighbor_if(point, direction, |_, _| true)
     }
 
-    pub fn neighbor_if<F>(&self, point: &Point, direction: Direction, func: F) -> Option<Point>
+    pub fn neighbor_if<F>(&self, point: &Point, direction: &Direction, func: F) -> Option<Point>
     where
-        F: FnOnce() -> bool,
+        F: Clone + Fn(&Point, &Direction) -> bool,
     {
         // Calculate coordinates of the neighbor
         let neighbor = point.neighbor(direction);
 
         // If neighbor is within grid return it
-        match self.is_point_in_grid(&neighbor) && func() {
+        match self.is_point_in_grid(&neighbor) && func(&neighbor, direction) {
             true => Some(neighbor),
             false => None,
         }
     }
 
+    pub fn neighbors(&self, point: &Point, directions: &[&Direction]) -> Vec<Point> {
+        directions
+            .iter()
+            .filter_map(|direction| self.neighbor(point, direction))
+            .collect::<Vec<_>>()
+    }
+
+    pub fn neighbors_if<F>(&self, point: &Point, directions: &[&Direction], func: F) -> Vec<Point>
+    where
+        F: Clone + Fn(&Point, &Direction) -> bool,
+    {
+        directions
+            .iter()
+            .filter_map(|direction| self.neighbor_if(point, direction, func.clone()))
+            .collect::<Vec<_>>()
+    }
+
     /// Get positions of all values from the grid
     pub fn get_all_values(&self, value: char) -> Vec<Point> {
+        self.get_all_values_if(value, || true)
+    }
+
+    pub fn get_all_values_if<F>(&self, value: char, func: F) -> Vec<Point>
+    where
+        F: Copy + Fn() -> bool,
+    {
         self.internal
             .iter()
             .enumerate()
             .flat_map(|(i, row)| {
                 row.iter()
                     .enumerate()
-                    .filter_map(move |(j, c)| match *c == value {
+                    .filter_map(move |(j, c)| match *c == value && func() {
                         true => Some(Point {
                             x: j as isize,
                             y: i as isize,
@@ -258,11 +290,11 @@ mod tests {
     fn test_neighbor_if_true() {
         let grid = build_grid();
 
-        let result = grid.neighbor_if(&Point::new(0, 0), Direction::East, || true);
+        let result = grid.neighbor_if(&Point::new(0, 0), &Direction::East, |_, _| true);
         assert!(result.is_some(), "result: {:?}", result);
         assert_eq!(result.unwrap(), Point::new(1, 0));
 
-        let result = grid.neighbor_if(&Point::new(0, 0), Direction::West, || true);
+        let result = grid.neighbor_if(&Point::new(0, 0), &Direction::West, |_, _| true);
         assert!(result.is_none(), "result: {:?}", result);
     }
 
@@ -270,10 +302,10 @@ mod tests {
     fn test_neighbor_if_false() {
         let grid = build_grid();
 
-        let result = grid.neighbor_if(&Point::new(0, 0), Direction::East, || false);
+        let result = grid.neighbor_if(&Point::new(0, 0), &Direction::East, |_, _| false);
         assert!(result.is_none(), "result: {:?}", result);
 
-        let result = grid.neighbor_if(&Point::new(0, 0), Direction::West, || false);
+        let result = grid.neighbor_if(&Point::new(0, 0), &Direction::West, |_, _| false);
         assert!(result.is_none(), "result: {:?}", result);
     }
 
@@ -281,18 +313,18 @@ mod tests {
     fn test_neighbor() {
         let grid = build_grid();
 
-        let result = grid.neighbor(&Point::new(0, 0), Direction::East);
+        let result = grid.neighbor(&Point::new(0, 0), &Direction::East);
         assert!(result.is_some(), "result: {:?}", result);
         assert_eq!(result.unwrap(), Point::new(1, 0));
 
-        let result = grid.neighbor(&Point::new(0, 0), Direction::South);
+        let result = grid.neighbor(&Point::new(0, 0), &Direction::South);
         assert!(result.is_some(), "result: {:?}", result);
         assert_eq!(result.unwrap(), Point::new(0, 1));
 
-        let result = grid.neighbor(&Point::new(0, 0), Direction::North);
+        let result = grid.neighbor(&Point::new(0, 0), &Direction::North);
         assert!(result.is_none(), "result: {:?}", result);
 
-        let result = grid.neighbor(&Point::new(0, 0), Direction::West);
+        let result = grid.neighbor(&Point::new(0, 0), &Direction::West);
         assert!(result.is_none(), "result: {:?}", result);
     }
 
