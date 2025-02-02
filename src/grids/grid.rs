@@ -25,17 +25,11 @@ impl Grid {
 
         let rows = data.len();
         let cols = data[0].len();
-        let mut tiles = Vec::new();
-
-        for i in 0..rows {
-            let row = data[i].iter().map(|c| *c).collect();
-            tiles.push(row);
-        }
 
         Ok(Self {
             rows,
             cols,
-            internal: tiles,
+            internal: data,
         })
     }
 
@@ -47,6 +41,50 @@ impl Grid {
             .collect::<Vec<_>>();
 
         Self::new(grid)
+    }
+
+    pub fn new_with<F>(rows: usize, cols: usize, func: F) -> Result<Self, PuzzleError>
+    where
+        F: Fn(Point) -> char,
+    {
+        let internal = (0..rows)
+            .map(|i| {
+                {
+                    (0..cols)
+                        .map(|j| {
+                            func(Point {
+                                x: j as isize,
+                                y: i as isize,
+                            })
+                        })
+                        .collect::<Vec<_>>()
+                }
+            })
+            .collect::<Vec<_>>();
+
+        Ok(Self {
+            rows,
+            cols,
+            internal,
+        })
+    }
+
+    pub fn fill(&mut self, data: &[(Point, char)]) -> Result<(), PuzzleError> {
+        // Avoid changing of the grid if there is invalid point
+        for (point, _) in data {
+            if !self.is_point_in_grid(point) {
+                return Err(PuzzleError::GenericError(format!(
+                    "Point {:?} is not in the grid",
+                    point
+                )));
+            }
+        }
+
+        for (point, value) in data {
+            self[*point] = *value;
+        }
+
+        Ok(())
     }
 
     pub fn is_point_in_grid(&self, point: &Point) -> bool {
@@ -161,6 +199,29 @@ mod tests {
     }
 
     #[test]
+    fn test_new_with() {
+        let result = Grid::new_with(2, 3, |_| '.');
+
+        assert!(result.is_ok());
+
+        let grid = result.unwrap();
+        assert_eq!(grid.rows, 2);
+        assert_eq!(grid.cols, 3);
+
+        for i in 0..2 {
+            for j in 0..3 {
+                assert_eq!(
+                    grid[Point { x: j, y: i }],
+                    '.',
+                    "Failed at (x: {}, y: {})",
+                    j,
+                    i
+                );
+            }
+        }
+    }
+
+    #[test]
     fn test_index() {
         let mut grid = build_grid();
 
@@ -251,5 +312,53 @@ mod tests {
                 Point { x: 5, y: 2 }
             ]
         );
+    }
+
+    #[test]
+    fn test_fill() {
+        let mut grid = Grid::new_with(2, 3, |_| '.').unwrap();
+
+        assert_eq!(grid[Point { x: 0, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 0, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 1 }], '.');
+
+        let result = grid.fill(&[(Point { x: 0, y: 0 }, 'S'), (Point { x: 2, y: 1 }, 'E')]);
+
+        assert!(result.is_ok(), "result: {:?}", result);
+        assert_eq!(grid[Point { x: 0, y: 0 }], 'S');
+        assert_eq!(grid[Point { x: 1, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 0, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 1 }], 'E');
+    }
+
+    #[test]
+    fn test_fill_out_of_bounds() {
+        let mut grid = Grid::new_with(2, 3, |_| '.').unwrap();
+
+        assert_eq!(grid[Point { x: 0, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 0, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 1 }], '.');
+
+        let result = grid.fill(&[
+            (Point { x: 0, y: 0 }, 'S'),
+            (Point { x: 2, y: 1 }, 'E'),
+            (Point { x: 42, y: 42 }, 'X'),
+        ]);
+
+        assert!(result.is_err(), "result: {:?}", result);
+        assert_eq!(grid[Point { x: 0, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 0 }], '.');
+        assert_eq!(grid[Point { x: 0, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 1, y: 1 }], '.');
+        assert_eq!(grid[Point { x: 2, y: 1 }], '.');
     }
 }
