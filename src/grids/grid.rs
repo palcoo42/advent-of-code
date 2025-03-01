@@ -99,11 +99,16 @@ impl Grid {
         point.x >= 0 && point.x < self.cols as isize && point.y >= 0 && point.y < self.rows as isize
     }
 
-    pub fn neighbor(&self, point: &Point, direction: &Direction) -> Option<Point> {
+    pub fn neighbor(&self, point: &Point, direction: &Direction) -> Option<(Point, Direction)> {
         self.neighbor_if(point, direction, |_, _| true)
     }
 
-    pub fn neighbor_if<F>(&self, point: &Point, direction: &Direction, func: F) -> Option<Point>
+    pub fn neighbor_if<F>(
+        &self,
+        point: &Point,
+        direction: &Direction,
+        func: F,
+    ) -> Option<(Point, Direction)>
     where
         F: Clone + Fn(&Point, &Direction) -> bool,
     {
@@ -112,19 +117,24 @@ impl Grid {
 
         // If neighbor is within grid return it
         match self.is_point_in_grid(&neighbor) && func(&neighbor, direction) {
-            true => Some(neighbor),
+            true => Some((neighbor, *direction)),
             false => None,
         }
     }
 
-    pub fn neighbors(&self, point: &Point, directions: &[&Direction]) -> Vec<Point> {
+    pub fn neighbors(&self, point: &Point, directions: &[Direction]) -> Vec<(Point, Direction)> {
         directions
             .iter()
             .filter_map(|direction| self.neighbor(point, direction))
             .collect::<Vec<_>>()
     }
 
-    pub fn neighbors_if<F>(&self, point: &Point, directions: &[&Direction], func: F) -> Vec<Point>
+    pub fn neighbors_if<F>(
+        &self,
+        point: &Point,
+        directions: &[Direction],
+        func: F,
+    ) -> Vec<(Point, Direction)>
     where
         F: Clone + Fn(&Point, &Direction) -> bool,
     {
@@ -134,12 +144,33 @@ impl Grid {
             .collect::<Vec<_>>()
     }
 
-    /// Get positions of all values from the grid
-    pub fn get_all_values(&self, value: char) -> Vec<Point> {
-        self.get_all_values_if(value, || true)
+    pub fn get_if<F>(&self, func: F) -> Vec<Point>
+    where
+        F: Copy + Fn(char) -> bool,
+    {
+        self.internal
+            .iter()
+            .enumerate()
+            .flat_map(|(i, row)| {
+                row.iter()
+                    .enumerate()
+                    .filter_map(move |(j, c)| match func(*c) {
+                        true => Some(Point {
+                            x: j as isize,
+                            y: i as isize,
+                        }),
+                        false => None,
+                    })
+            })
+            .collect()
     }
 
-    pub fn get_all_values_if<F>(&self, value: char, func: F) -> Vec<Point>
+    /// Get positions of all values from the grid
+    pub fn get_value(&self, value: char) -> Vec<Point> {
+        self.get_value_if(value, || true)
+    }
+
+    pub fn get_value_if<F>(&self, value: char, func: F) -> Vec<Point>
     where
         F: Copy + Fn() -> bool,
     {
@@ -292,7 +323,7 @@ mod tests {
 
         let result = grid.neighbor_if(&Point::new(0, 0), &Direction::East, |_, _| true);
         assert!(result.is_some(), "result: {:?}", result);
-        assert_eq!(result.unwrap(), Point::new(1, 0));
+        assert_eq!(result.unwrap(), (Point::new(1, 0), Direction::East));
 
         let result = grid.neighbor_if(&Point::new(0, 0), &Direction::West, |_, _| true);
         assert!(result.is_none(), "result: {:?}", result);
@@ -315,11 +346,11 @@ mod tests {
 
         let result = grid.neighbor(&Point::new(0, 0), &Direction::East);
         assert!(result.is_some(), "result: {:?}", result);
-        assert_eq!(result.unwrap(), Point::new(1, 0));
+        assert_eq!(result.unwrap(), (Point::new(1, 0), Direction::East));
 
         let result = grid.neighbor(&Point::new(0, 0), &Direction::South);
         assert!(result.is_some(), "result: {:?}", result);
-        assert_eq!(result.unwrap(), Point::new(0, 1));
+        assert_eq!(result.unwrap(), (Point::new(0, 1), Direction::South));
 
         let result = grid.neighbor(&Point::new(0, 0), &Direction::North);
         assert!(result.is_none(), "result: {:?}", result);
@@ -329,14 +360,14 @@ mod tests {
     }
 
     #[test]
-    fn test_get_all_values() {
+    fn test_get_value() {
         let lines = ["..#.S#", "......", "E#...#"];
         let grid = Grid::new_from_lines(&lines).unwrap();
 
-        assert_eq!(grid.get_all_values('S'), vec![Point { x: 4, y: 0 }]);
-        assert_eq!(grid.get_all_values('E'), vec![Point { x: 0, y: 2 }]);
+        assert_eq!(grid.get_value('S'), vec![Point { x: 4, y: 0 }]);
+        assert_eq!(grid.get_value('E'), vec![Point { x: 0, y: 2 }]);
         assert_eq!(
-            grid.get_all_values('#'),
+            grid.get_value('#'),
             vec![
                 Point { x: 2, y: 0 },
                 Point { x: 5, y: 0 },

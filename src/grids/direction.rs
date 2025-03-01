@@ -11,6 +11,14 @@ pub enum Direction {
 }
 
 impl Direction {
+    /// Constant to name the usual directions in a grid
+    pub const CARDINAL: [Direction; 4] = [
+        Direction::North,
+        Direction::East,
+        Direction::South,
+        Direction::West,
+    ];
+
     pub fn left(&self) -> Direction {
         match self {
             Direction::East => Direction::North,
